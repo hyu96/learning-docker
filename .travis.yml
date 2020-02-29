@@ -1,0 +1,20 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t hyudq2510/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run hyudq2510/react-test npm run test -- --coverage
+
+after_success:
+    - docker build -t hyudq2510/multi-client ./client
+    - docker build -t hyudq2510/multi-server ./server
+    - docker build -t hyudq2510/multi-worker ./worker
+    - docker build -t hyudq2510/multi-nginx ./nginx
+    - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+    - docker push hyudq2510/multi-client
+    - docker push hyudq2510/multi-server
+    - docker push hyudq2510/multi-worker
+    - docker push hyudq2510/multi-nginx
